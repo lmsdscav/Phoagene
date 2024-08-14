@@ -1,0 +1,75 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lmsdscav <lmsdscavmc@hotmail.com>
+Date: Tue, 16 Jul 2024 16:24:46 +0800
+Subject: [PATCH] Remove Warning of plugin getting faraway chunk
+
+
+diff --git a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+index 781459eacba671bde24cc696598a7dbd9454b27f..2b27b0a85acad253506be313d92c86347b35a1d5 100644
+--- a/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
++++ b/src/main/java/org/bukkit/craftbukkit/CraftWorld.java
+@@ -327,7 +327,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+ 
+     @Override
+     public Chunk getChunkAt(int x, int z) {
+-        warnUnsafeChunk("getting a faraway chunk", x, z); // Paper
++//        warnUnsafeChunk("getting a faraway chunk", x, z); // Paper // Phosgene
+         // Paper start - add ticket to hold chunk for a little while longer if plugin accesses it
+         net.minecraft.world.level.chunk.LevelChunk chunk = this.world.getChunkSource().getChunkAtIfLoadedImmediately(x, z);
+         if (chunk == null) {
+@@ -442,8 +442,8 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+     @Override
+     public boolean regenerateChunk(int x, int z) {
+         org.spigotmc.AsyncCatcher.catchOp("chunk regenerate"); // Spigot
+-        warnUnsafeChunk("regenerating a faraway chunk", x, z); // Paper
+-        // Paper start - implement regenerateChunk method
++//        warnUnsafeChunk("regenerating a faraway chunk", x, z); // Paper // Phosgene
++//         Paper start - implement regenerateChunk method
+         final ServerLevel serverLevel = this.world;
+         final net.minecraft.server.level.ServerChunkCache serverChunkCache = serverLevel.getChunkSource();
+         final ChunkPos chunkPos = new ChunkPos(x, z);
+@@ -538,7 +538,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+     @Override
+     public boolean loadChunk(int x, int z, boolean generate) {
+         org.spigotmc.AsyncCatcher.catchOp("chunk load"); // Spigot
+-        warnUnsafeChunk("loading a faraway chunk", x, z); // Paper
++//        warnUnsafeChunk("loading a faraway chunk", x, z); // Paper // Phosgene
+         // Paper start - Optimize this method
+         ChunkPos chunkPos = new ChunkPos(x, z);
+         ChunkAccess immediate = world.getChunkSource().getChunkAtIfLoadedImmediately(x, z); // Paper
+@@ -602,7 +602,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+ 
+     @Override
+     public boolean addPluginChunkTicket(int x, int z, Plugin plugin) {
+-        warnUnsafeChunk("adding a faraway chunk ticket", x, z); // Paper
++//        warnUnsafeChunk("adding a faraway chunk ticket", x, z); // Paper // Phosgene
+         Preconditions.checkArgument(plugin != null, "null plugin");
+         Preconditions.checkArgument(plugin.isEnabled(), "plugin is not enabled");
+ 
+@@ -671,7 +671,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+ 
+     @Override
+     public void setChunkForceLoaded(int x, int z, boolean forced) {
+-        warnUnsafeChunk("forceloading a faraway chunk", x, z); // Paper
++//        warnUnsafeChunk("forceloading a faraway chunk", x, z); // Paper // Phosgene
+         this.getHandle().setChunkForced(x, z, forced);
+     }
+ 
+@@ -984,7 +984,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+ 
+     @Override
+     public int getHighestBlockYAt(int x, int z, org.bukkit.HeightMap heightMap) {
+-        warnUnsafeChunk("getting a faraway chunk", x >> 4, z >> 4); // Paper
++//        warnUnsafeChunk("getting a faraway chunk", x >> 4, z >> 4); // Paper //Phosgene
+         // Transient load for this tick
+         return this.world.getChunk(x >> 4, z >> 4).getHeight(CraftHeightMap.toNMS(heightMap), x, z);
+     }
+@@ -2438,7 +2438,7 @@ public class CraftWorld extends CraftRegionAccessor implements World {
+     // Spigot end
+     // Paper start
+     public java.util.concurrent.CompletableFuture<Chunk> getChunkAtAsync(int x, int z, boolean gen, boolean urgent) {
+-        warnUnsafeChunk("getting a faraway chunk async", x, z); // Paper
++//        warnUnsafeChunk("getting a faraway chunk async", x, z); // Paper // Phosgene
+         if (Bukkit.isPrimaryThread()) {
+             net.minecraft.world.level.chunk.LevelChunk immediate = this.world.getChunkSource().getChunkAtIfLoadedImmediately(x, z);
+             if (immediate != null) {

@@ -1,0 +1,64 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: lmsdscav <lmsdscavmc@hotmail.com>
+Date: Sun, 7 Jul 2024 00:15:40 +0800
+Subject: [PATCH] SpawnCategoryForChunk limiter Add
+
+
+diff --git a/src/main/java/net/minecraft/world/level/NaturalSpawner.java b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
+index a7b451effce88fb133a0118d2fcdfb985b3e7c83..a633740c588f48169b9591ee13294de3534a0768 100644
+--- a/src/main/java/net/minecraft/world/level/NaturalSpawner.java
++++ b/src/main/java/net/minecraft/world/level/NaturalSpawner.java
+@@ -48,6 +48,8 @@ import net.minecraft.world.level.material.FluidState;
+ import net.minecraft.world.level.pathfinder.PathComputationType;
+ import net.minecraft.world.level.storage.LevelData;
+ import net.minecraft.world.phys.Vec3;
++import org.lxstd.phosgene.Phosgene;
++import org.lxstd.phosgene.phosgeneConfig;
+ import org.slf4j.Logger;
+ import org.bukkit.craftbukkit.util.CraftSpawnCategory;
+ import org.bukkit.entity.SpawnCategory;
+@@ -179,9 +181,14 @@ public final class NaturalSpawner {
+ 
+                 Objects.requireNonNull(info);
+                 // Paper start
+-                int spawnCount = NaturalSpawner.spawnCategoryForChunk(enumcreaturetype, world, chunk, spawnercreature_c, info::afterSpawn,
+-                    difference, world.paperConfig().entities.spawning.perPlayerMobSpawns ? world.getChunkSource().chunkMap::updatePlayerMobTypeMap : null);
+-                info.mobCategoryCounts.mergeInt(enumcreaturetype, spawnCount, Integer::sum);
++                // Phosgene Mod
++                if(++Phosgene.SpawnCategoryForChunks_Counter % phosgeneConfig.SpawnCategoryForChunksDelayCount==0) {
++                    int spawnCount = NaturalSpawner.spawnCategoryForChunk(enumcreaturetype, world, chunk, spawnercreature_c, info::afterSpawn,
++                            difference, world.paperConfig().entities.spawning.perPlayerMobSpawns ? world.getChunkSource().chunkMap::updatePlayerMobTypeMap : null);
++                    info.mobCategoryCounts.mergeInt(enumcreaturetype, spawnCount, Integer::sum);
++                    Phosgene.SpawnCategoryForChunks_Counter=0;
++                }
++                // Phosgene Mod End
+                 // Paper end
+             }
+         }
+diff --git a/src/main/java/org/lxstd/phosgene/Phosgene.java b/src/main/java/org/lxstd/phosgene/Phosgene.java
+index 71ac84d060ac4dc6dce696a8b2130cb794b4b157..f30b395c3570eae8b9efc0bb3f243485bec34f02 100644
+--- a/src/main/java/org/lxstd/phosgene/Phosgene.java
++++ b/src/main/java/org/lxstd/phosgene/Phosgene.java
+@@ -8,6 +8,6 @@ public class Phosgene {
+     public static void pushTask(Runnable task){
+         PhosgeneThreadPool.execute(task);
+     }
+-
++    public static Integer SpawnCategoryForChunks_Counter=0;
+ 
+ }
+diff --git a/src/main/java/org/lxstd/phosgene/phosgeneConfig.java b/src/main/java/org/lxstd/phosgene/phosgeneConfig.java
+index a4493e64c6f52d3ebcbd276f90062c4e9189b24f..55a0d607450b86fd0befebd3d6ac0857fffd01bc 100644
+--- a/src/main/java/org/lxstd/phosgene/phosgeneConfig.java
++++ b/src/main/java/org/lxstd/phosgene/phosgeneConfig.java
+@@ -173,7 +173,10 @@ public class phosgeneConfig {
+         serverModName = getString("server-mod-name","Phosgene","Server brand name.");
+     }
+     public static Integer PoolCores=1;
++    public static Integer SpawnCategoryForChunksDelayCount=10;
+     private static void perf() {
+         PoolCores = getInt("max-pool-threads",1,"Max core");
++        SpawnCategoryForChunksDelayCount = getInt("SpawnCategoryForChunks-DelayCount",10,"This will run a Counter to limit the frequency of SpawnCreature.SpawnCategoryForChunks");
++
+     }
+ }
